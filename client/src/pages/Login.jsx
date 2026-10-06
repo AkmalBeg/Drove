@@ -8,12 +8,18 @@ import { Link } from 'react-router-dom';
 const Login = ({ mode = "login" }) => {
     const isRegister = mode === "register";
     const navigate = useNavigate();
+    const { login, register } = useApp();
     const [form, setform] = useState({ name: "", email: "", password: "" });
     const [isloading, setIsloading] = useState(false);
     const Updatedfield = (key, value) => setform((prev) => ({ ...prev, [key]: value }));
 
     const handlesubmit = async (e) => {
-
+e.preventDefault();
+        setIsloading(true);
+        const ok = isRegister ? await register(form.name, form.email, form.password) 
+        : await login(form.email, form.password);
+        setIsloading(false);
+        if (ok) navigate("/")
     }
 
         return (

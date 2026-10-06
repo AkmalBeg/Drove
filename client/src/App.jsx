@@ -10,7 +10,12 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login mode="login" />} />
         <Route path="/register" element={<Login mode="register" />} />
-        <Route path="/" element={<Drove />} />
+        <Route element={<Protected />}>
+          <Route element={<Dashboard />} >
+            <Route path="/" element={<Drove />} />
+          </Route>
+        </Route>
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
