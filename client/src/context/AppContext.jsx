@@ -1,13 +1,30 @@
 import { createContext  } from "react";
-import { useContext, useState ,useCallback} from "react";
+import { useContext, useState ,useCallback,useEffect} from "react";
 import { toast } from "react-hot-toast";
-import api from "../utils/api.js";
+import api from "../config/api.js";
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+    const ROOT_BREACRUMB =[{id:null,name:"My Drive"}]
 const errmessage = (error, fallback) => error.response?.data?.message || fallback ;
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+
+// upload globle state
+const [uploading, setUploading] = useState(false)
+const [uploadProgress, setUploadProgress] = useState(0)
+
+//Drove veiw state
+const [currentFolder, setCurrentFolder] = useState(null)
+const [breadcrumbs, setBreadcrumbs] = useState(ROOT_BREACRUMB)
+const [files, setFiles] = useState([])
+const [folders, setFolders] = useState([])
+const [isDriveloading, setIsDriveLoading] = useState(false)
+
+//filter state
+const [searchQuery, setSearchQuery] = useState("")
+const [sortBy, setSortBy] = useState("name_asc")
+
 
     const refreshUser = useCallback(async () => {
         try {
@@ -54,7 +71,37 @@ return false;
         }
     }
 
-    const value = { user, setUser, login, register, logout ,loading,isAuthenticated:!!user} 
+    const fetchDrovecontent = useCallback(()=>{
+        async (folderId =currentFolder,search=searchQuery,sort=sortBy)=>{
+            if(!user) return;
+            setIsDriveLoading(true)
+            try{
+                const parentparms = folderId || "null";
+                const [foldersRes,filesRes,detailRes] = await Promise.all([
+                    api.get("/api/folders",{params:{parent_id:parentparms}}),
+                    api.get("/api/files",{params:{parent_id:parentparms,search,sort}}),
+                    folderId ? api.get(`/api/folders/${folderId}`) : null
+                ]);
+                setFolders(foldersRes.data.folders);
+                setFiles(filesRes.data.files);
+                setBreadcrumbs(detailRes ?.data?.breadcrumbs || ROOT_BREACRUMB);
+                if (detailRes) {
+                    setCurrentFolder(detailRes.data);
+                }
+            } catch (error) {
+                toast.error(errmessage(error, "Failed to fetch drive content"));
+            } finally {
+                setIsDriveLoading(false);
+            }
+        };
+    }, [user, currentFolder, searchQuery, sortBy]);
+
+    const value = { user, setUser, login, register, logout
+         ,loading,isAuthenticated:!!user,uploading,uploadProgress,
+         setUploading,setUploadProgress, refreshUser, currentFolder, setCurrentFolder, breadcrumbs, setBreadcrumbs,
+         files, setFiles, folders, setFolders, isDriveloading, setIsDriveLoading,
+         searchQuery, setSearchQuery, sortBy, setSortBy, fetchDrovecontent
+        }; 
     return <AppContext.Provider value={value}>
         {children}
     </AppContext.Provider>

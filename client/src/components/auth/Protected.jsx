@@ -1,17 +1,18 @@
 
 import { useApp } from '../../context/AppContext'
-import {uselocation} from "react-router-dom"
-import {spinner} from '../ui/Spinner'
+import {useLocation} from 'react-router-dom';
+import {Spinner} from '../ui/Spinner.jsx'
+import  {Outlet}  from 'react-router-dom';
 
 const Protected = ({ children }) => {
     const {isAuthenticated,loading}=useApp()
-    const location=uselocation()
+    const location=useLocation()
 
     if(loading) {
         return (
             <div className='min-h-screen bg-slate-50 flex flex-col items-center
             justify-center gap-3'>
-                <spinner size="lg" className="text-orange-600"/>
+                <Spinner size="lg" className="text-orange-600"/>
                 <p className='text-sm text-slate-500 font-medium'>Loading...</p>
             </div>
         )
@@ -23,7 +24,7 @@ const Protected = ({ children }) => {
   return children ?
     <>
 {children}
-    </>: <outlet/>
+    </>: <Outlet/>
   
 }
 
