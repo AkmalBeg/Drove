@@ -5,18 +5,28 @@ import { FolderPlusIcon, HardDriveDownloadIcon, HardDriveIcon, PlusIcon, Trash2I
 import {Dropdown,DropdownItem} from '../ui/Dropdown'
 import { Button } from '../ui/Button'
 import { formatBytes } from '../../assets/assets'
-import {Location} from ""
+import {useLocation,Link} from "react-router-dom"
+import {progressBar} from "../ui/ProgressBar";
+import {useDrive} from "../../hooks/useDrive"
 const Sidebar = ({ mobileMenuOpen, setMobileMenuOpen, sidebarOpen }) => {
- const isuploading = false
+const {uploading,uploadFiles} =useDrive()
  
   const { user, currentFolderId } = useApp()
-  const Location = useLocation()
+  const location = useLocation()
   const fileinputRef = useRef(null)
+
 
   const storage_used = Number(user?.storage_used ?? 0);
   const storage_limit = Number(user?.storage_limit ?? 1073741824);
-  const storage_percentage = Math.min(100, Math.round((storage_used / storage_limit) * 100));
+  const used_percentage = Math.min(100, Math.round((storage_used / storage_limit) * 100));
  
+const handlefileselect=(e)=>{
+  if(e.target.files&&e.target.files.length>0){
+    uploadFiles(e.target.files,currentFolderId);
+    e.target.value="";
+    }
+}
+
  const navitems=[
   {label:"My Drive",path:"/",icon:HardDriveIcon},
    {label:"Shared Files",path:"/shared",icon:UsersIcon},
@@ -45,7 +55,8 @@ const Sidebar = ({ mobileMenuOpen, setMobileMenuOpen, sidebarOpen }) => {
       uppercase'>Cloud Storage</p>
     </div>
 <div className='p-4'>
-  <input type='file' ref={fileinputRef} multiple className='hidden'/>
+  <input type='file' ref={fileinputRef} multiple className='hidden'
+  onChange={handlefileselect}/>
 
 <Dropdown
 trigger={
